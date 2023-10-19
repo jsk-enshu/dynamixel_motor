@@ -197,7 +197,7 @@ class SerialProxy():
         rospy.set_param('dynamixel/%s/connected_ids' % self.port_namespace, self.motors)
         
         status_str = '%s: Found %d motors - ' % (self.port_namespace, len(self.motors))
-        for model_number,count in counts.items():
+        for model_number,count in list(counts.items()):
             if count:
                 model_name = DXL_MODEL_TO_PARAMS[model_number]['name']
                 status_str += '%d %s [' % (count, model_name)
