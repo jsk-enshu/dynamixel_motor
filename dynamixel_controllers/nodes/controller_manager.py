@@ -61,6 +61,7 @@ from dynamixel_controllers.srv import StopController
 from dynamixel_controllers.srv import StopControllerResponse
 from dynamixel_controllers.srv import RestartController
 from dynamixel_controllers.srv import RestartControllerResponse
+import importlib
 
 class ControllerManager:
     def __init__(self):
@@ -205,7 +206,7 @@ class ControllerManager:
                 package_module = __import__(package_path, globals(), locals(), [module_name], -1)
             else:
                 # reload module if previously imported
-                package_module = reload(sys.modules[package_path])
+                package_module = importlib.reload(sys.modules[package_path])
             controller_module = getattr(package_module, module_name)
         except ImportError as ie:
             self.start_controller_lock.release()
