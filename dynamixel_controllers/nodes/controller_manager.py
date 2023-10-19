@@ -78,7 +78,7 @@ class ControllerManager:
         manager_namespace = rospy.get_param('~namespace')
         serial_ports = rospy.get_param('~serial_ports')
         
-        for port_namespace,port_config in serial_ports.items():
+        for port_namespace,port_config in list(serial_ports.items()):
             port_name = port_config['port_name']
             baud_rate = port_config['baud_rate']
             readback_echo = port_config['readback_echo'] if 'readback_echo' in port_config else False
@@ -132,7 +132,7 @@ class ControllerManager:
         if self.diagnostics_rate > 0: Thread(target=self.diagnostics_processor).start()
 
     def on_shutdown(self):
-        for serial_proxy in self.serial_proxies.values():
+        for serial_proxy in list(self.serial_proxies.values()):
             serial_proxy.disconnect()
 
     def diagnostics_processor(self):
@@ -143,7 +143,7 @@ class ControllerManager:
             diag_msg.status = []
             diag_msg.header.stamp = rospy.Time.now()
             
-            for controller in self.controllers.values():
+            for controller in list(self.controllers.values()):
                 try:
                     joint_state = controller.joint_state
                     temps = joint_state.motor_temps
@@ -173,9 +173,9 @@ class ControllerManager:
         controllers_still_waiting = []
         
         for i,(controller_name,deps,kls) in enumerate(self.waiting_meta_controllers):
-            if not set(deps).issubset(self.controllers.keys()):
+            if not set(deps).issubset(list(self.controllers.keys())):
                 controllers_still_waiting.append(self.waiting_meta_controllers[i])
-                rospy.logwarn('[%s] not all dependencies started, still waiting for %s...' % (controller_name, str(list(set(deps).difference(self.controllers.keys())))))
+                rospy.logwarn('[%s] not all dependencies started, still waiting for %s...' % (controller_name, str(list(set(deps).difference(list(self.controllers.keys()))))))
             else:
                 dependencies = [self.controllers[dep_name] for dep_name in deps]
                 controller = kls(controller_name, dependencies)
@@ -227,7 +227,7 @@ class ControllerManager:
             
         if port_name != 'meta' and (port_name not in self.serial_proxies):
             self.start_controller_lock.release()
-            return StartControllerResponse(False, 'Specified port [%s] not found, available ports are %s. Unable to start controller %s' % (port_name, str(self.serial_proxies.keys()), controller_name))
+            return StartControllerResponse(False, 'Specified port [%s] not found, available ports are %s. Unable to start controller %s' % (port_name, str(list(self.serial_proxies.keys())), controller_name))
             
         controller = kls(self.serial_proxies[port_name].dxl_io, controller_name, port_name)
         
